@@ -1,0 +1,6 @@
+[package]
+name = "libnemo"
+version = "0.1.0"
+authors = ["sstanf"]
+
+[dependencies]
