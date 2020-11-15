@@ -1,6 +1,6 @@
-#[derive(Copy,Clone,PartialEq)]
+#[derive(Copy, Clone, PartialEq)]
 pub enum SegmentType {
     UP,
     DOWN,
-    LEVEL
+    LEVEL,
 }

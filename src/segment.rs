@@ -1,20 +1,24 @@
-use segment_type::SegmentType;
 use gas::Gas;
 use otu_cns::OtuCns;
+use segment_type::SegmentType;
 use types::*;
 
-
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone)]
 pub struct SegmentIn {
     pub segment_type: SegmentType,
     pub depth: Depth, // in mbar
     pub time: f64,
-    pub setpoint: f64
+    pub setpoint: f64,
 }
 
 impl SegmentIn {
     fn new(segment_type: SegmentType, depth: Depth, time: f64, setpoint: f64) -> SegmentIn {
-        SegmentIn { segment_type, depth, time, setpoint }
+        SegmentIn {
+            segment_type,
+            depth,
+            time,
+            setpoint,
+        }
     }
     pub fn new_bottom(depth: Depth, time: f64, setpoint: f64) -> SegmentIn {
         SegmentIn::new(SegmentType::LEVEL, depth, time, setpoint)
@@ -47,11 +51,15 @@ pub struct Compartments {
 }
 
 impl Compartments {
-    pub fn new_surface(atm_pressure: f64, partial_water: f64, num_compartments: usize) -> Compartments {
+    pub fn new_surface(
+        atm_pressure: f64,
+        partial_water: f64,
+        num_compartments: usize,
+    ) -> Compartments {
         let mut nitrogen = Vec::with_capacity(num_compartments);
         let mut helium = Vec::with_capacity(num_compartments);
         let n2_partial = 0.79 * ((atm_pressure - partial_water) / 1000.0);
-        for _i in 0 .. num_compartments {
+        for _i in 0..num_compartments {
             nitrogen.push(n2_partial);
             helium.push(0.0);
         }
@@ -69,10 +77,12 @@ impl Compartments {
     pub fn new_copy(compartments: &Compartments) -> Compartments {
         let mut nitrogen = Vec::with_capacity(compartments.nitrogen.len());
         let mut helium = Vec::with_capacity(compartments.helium.len());
-        for f in &compartments.nitrogen { nitrogen.push(*f); }
-        for f in &compartments.helium { helium.push(*f); }
+        for f in &compartments.nitrogen {
+            nitrogen.push(*f);
+        }
+        for f in &compartments.helium {
+            helium.push(*f);
+        }
         Compartments { nitrogen, helium }
     }
 }
-
-

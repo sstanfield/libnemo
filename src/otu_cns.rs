@@ -10,7 +10,7 @@ const _CNS_PPO2HI: [f64; 7] = [0.6, 0.7, 0.8, 0.9, 1.1, 1.5, 100.0];
 const _CNS_LIMIT_SLOPE: [f64; 7] = [-1800.0, -1500.0, -1200.0, -900.0, -600.0, -300.0, -750.0];
 const _CNS_LIMIT_INTERCEPT: [f64; 7] = [1800.0, 1620.0, 1410.0, 1170.0, 900.0, 570.0, 1245.0];
 
-#[derive(Copy,Clone)]
+#[derive(Copy, Clone)]
 pub struct OtuCns {
     pub otu: f64,
     pub cns: f64,
@@ -67,7 +67,12 @@ pub fn bottom(depth: Pressure, time: f64, gas: Gas) -> OtuCns {
 /// Oxygen Toxicity Calculations by Erik C. Baker, P.E.
 /// Link as of writing at: https://www.shearwater.com/wp-content/uploads/2012/08/Oxygen_Toxicity_Calculations.pdf
 /// Calculates otu and cns for an ascent/descent segment.
-pub fn descent(rate_mbar: DepthChange, from_depth: Pressure, to_depth: Pressure, gas: Gas) -> OtuCns {
+pub fn descent(
+    rate_mbar: DepthChange,
+    from_depth: Pressure,
+    to_depth: Pressure,
+    gas: Gas,
+) -> OtuCns {
     let time = (to_depth.to_mbar() - from_depth.to_mbar()) / rate_mbar.to_mbar();
     let maxata = to_depth.to_mbar().max(from_depth.to_mbar()) / 1000.0;
     let minata = to_depth.to_mbar().min(from_depth.to_mbar()) / 1000.0;
@@ -78,7 +83,8 @@ pub fn descent(rate_mbar: DepthChange, from_depth: Pressure, to_depth: Pressure,
     if maxpo2 > 0.5 {
         let lowpo2 = if minpo2 < 0.5 { 0.5 } else { minpo2 };
         let time = time * (maxpo2 - lowpo2) / (maxpo2 - minpo2);
-        otu = 3.0 / 11.0 * time / (maxpo2 - lowpo2) * (((maxpo2 - 0.5f64) / 0.5f64).powf(11.0 / 6.0))
+        otu = 3.0 / 11.0 * time / (maxpo2 - lowpo2)
+            * (((maxpo2 - 0.5f64) / 0.5f64).powf(11.0 / 6.0))
             - (((lowpo2 - 0.5f64) / 0.5f64).powf(11.0 / 6.0));
         let mut otime = Vec::with_capacity(_CNS_PPO2SEGMENTS);
         otime.resize(_CNS_PPO2SEGMENTS, 0.0);
