@@ -1,9 +1,8 @@
-use types::*;
-
 use std::cmp::Ordering;
 use std::fmt;
 
-use segment_type::SegmentType;
+use crate::segment_type::SegmentType;
+use crate::types::*;
 
 #[derive(Copy, Clone)]
 pub struct Gas {
@@ -118,7 +117,7 @@ impl fmt::Display for Gas {
 
 #[cfg(test)]
 mod tests {
-    use *;
+    use crate::*;
 
     #[test]
     fn display() {

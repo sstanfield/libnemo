@@ -1,5 +1,5 @@
-use gas::Gas;
-use types::*;
+use crate::gas::Gas;
+use crate::types::*;
 
 use std::ops::Add;
 use std::ops::AddAssign;

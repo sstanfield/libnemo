@@ -1,7 +1,7 @@
-use gas::Gas;
-use otu_cns::OtuCns;
-use segment_type::SegmentType;
-use types::*;
+use crate::gas::Gas;
+use crate::otu_cns::OtuCns;
+use crate::segment_type::SegmentType;
+use crate::types::*;
 
 #[derive(Copy, Clone)]
 pub struct SegmentIn {

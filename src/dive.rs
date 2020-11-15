@@ -1,8 +1,8 @@
-use dive_consts::*;
-use gas::Gas;
-use segment::*;
-use segment_type::SegmentType;
-use types::*;
+use crate::dive_consts::*;
+use crate::gas::Gas;
+use crate::segment::*;
+use crate::segment_type::SegmentType;
+use crate::types::*;
 
 //use otu_cns::OtuCns;
 
@@ -344,7 +344,7 @@ fn descend(
         from_depth,
         to_depth,
     );
-    let otu_cns = ::otu_cns::descent(rate, from_depth, to_depth, gas);
+    let otu_cns = crate::otu_cns::descent(rate, from_depth, to_depth, gas);
 
     let segment = Segment {
         segment_type,
@@ -415,7 +415,7 @@ fn bottom(
     let gas = find_gas(dive, gasses, depth, SegmentType::LEVEL, setpoint);
     let comps_out = calc_bottom(comps_in, constants, dive.partial_water, depth, time, gas);
     let ceiling = calc_ceiling(comps_in, dive.atm_pressure, constants, dive.gf_lo);
-    let otu_cns = ::otu_cns::bottom(depth, time, gas);
+    let otu_cns = crate::otu_cns::bottom(depth, time, gas);
     let new_comps = Compartments::new_copy(&comps_out);
     (
         comps_out,
@@ -535,7 +535,7 @@ fn calc_deco_int(
                 calc_bottom_segment(dive, &comps_out, constants, gas, fs, ngf, time_off);
             comps_out = new_comps;
             nfs = next_stop(dive, &comps_out, constants, ngf);
-            let otu_cns = ::otu_cns::bottom(fs, time, gas);
+            let otu_cns = crate::otu_cns::bottom(fs, time, gas);
             last_depth = fs;
             segments.push(Segment {
                 segment_type: SegmentType::LEVEL,
@@ -662,7 +662,7 @@ pub fn calc_deco(
     segments_in: &[SegmentIn],
     gasses: &[Gas],
 ) -> Result<Vec<Segment>, String> {
-    if segments_in.len() == 0 {
+    if segments_in.is_empty() {
         return Err("Must provide segment(s) to calculate deco against.".to_string());
     }
     let (mut segments, comps_out, last_depth) =
