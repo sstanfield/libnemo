@@ -27,13 +27,13 @@ impl Depth {
         Depth((pressure.to_mbar() - atm.to_mbar()) * 10.0)
     }
 
-    pub fn to_mm(self: &Self) -> f64 {
+    pub fn to_mm(&self) -> f64 {
         self.0
     }
-    pub fn to_meters(self: &Self) -> f64 {
+    pub fn to_meters(&self) -> f64 {
         self.0 / 1000.0
     }
-    pub fn to_feet(self: &Self) -> f64 {
+    pub fn to_feet(&self) -> f64 {
         self.0 / 304.8
     }
 }
@@ -74,13 +74,13 @@ impl Pressure {
         Pressure(depth.to_mm() / 10.0)
     }
 
-    pub fn to_mbar(self: &Self) -> f64 {
+    pub fn to_mbar(&self) -> f64 {
         self.0
     }
-    pub fn to_bar(self: &Self) -> f64 {
+    pub fn to_bar(&self) -> f64 {
         self.0 / 1000.0
     }
-    pub fn to_depth(self: &Self, atm: Pressure) -> Depth {
+    pub fn to_depth(&self, atm: Pressure) -> Depth {
         Depth::from_pressure(*self, atm)
     }
 }
@@ -121,10 +121,10 @@ impl DepthChange {
         DepthChange(-depth.to_mm() / 10.0)
     }
 
-    pub fn to_mbar(self: &Self) -> f64 {
+    pub fn to_mbar(&self) -> f64 {
         self.0
     }
-    pub fn to_bar(self: &Self) -> f64 {
+    pub fn to_bar(&self) -> f64 {
         self.0 / 1000.0
     }
 }

@@ -121,22 +121,19 @@ fn find_ocgas(gasses: &[Gas], depth: Pressure, segment_type: SegmentType) -> Gas
             }
         }
     }
-    match ret {
-        None => {
-            for g in gasses {
-                if g.use_gas(depth, segment_type) {
-                    match ret {
-                        Some(rgas) => {
-                            if g.f_o2 * depth.to_mbar() < rgas.f_o2 * depth.to_mbar() {
-                                ret = Some(*g);
-                            }
+    if ret.is_none() {
+        for g in gasses {
+            if g.use_gas(depth, segment_type) {
+                match ret {
+                    Some(rgas) => {
+                        if g.f_o2 * depth.to_mbar() < rgas.f_o2 * depth.to_mbar() {
+                            ret = Some(*g);
                         }
-                        None => ret = Some(*g),
                     }
+                    None => ret = Some(*g),
                 }
             }
         }
-        _ => {}
     }
     // Seem to have no gasses... Return good old air.
     match ret {
@@ -318,7 +315,9 @@ fn next_stop(dive: &Dive, comps: &Compartments, constants: &TissueConstants, gf:
     Pressure::millibar(i as f64)
 }
 
-fn descend(
+// Intended to be a pure function and this is what it needs.
+#[allow(clippy::too_many_arguments)]
+fn change_depth(
     dive: &Dive,
     constants: &TissueConstants,
     gasses: &[Gas],
@@ -364,43 +363,25 @@ fn merge_ascends(prev_seg: Option<Segment>, new_seg: Segment) -> Vec<Segment> {
     let mut segs: Vec<Segment> = Vec::new();
     let mut time = new_seg.raw_time;
     let mut otu_cns = new_seg.otu_cns;
-    match prev_seg {
-        Some(seg) => {
-            if seg.segment_type == SegmentType::UP && seg.gas == new_seg.gas {
-                time += seg.raw_time;
-                otu_cns += seg.otu_cns;
-                let seg_out = Segment {
-                    time: time.ceil() as u32,
-                    raw_time: time,
-                    otu_cns,
-                    compartments: Compartments::new_copy(&new_seg.compartments),
-                    ..new_seg
-                };
-                segs.push(seg_out);
-                return segs;
-            } else {
-                segs.push(seg);
-            }
+    if let Some(seg) = prev_seg {
+        if seg.segment_type == SegmentType::UP && seg.gas == new_seg.gas {
+            time += seg.raw_time;
+            otu_cns += seg.otu_cns;
+            let seg_out = Segment {
+                time: time.ceil() as u32,
+                raw_time: time,
+                otu_cns,
+                compartments: Compartments::new_copy(&new_seg.compartments),
+                ..new_seg
+            };
+            segs.push(seg_out);
+            return segs;
+        } else {
+            segs.push(seg);
         }
-        None => {}
-    };
+    }
     segs.push(new_seg);
     segs
-}
-
-fn ascend(
-    dive: &Dive,
-    constants: &TissueConstants,
-    gasses: &[Gas],
-    rate: DepthChange,
-    from_depth: Pressure,
-    to_depth: Pressure,
-    setpoint: f64,
-    comps_in: &Compartments,
-) -> (Compartments, Segment) {
-    descend(
-        dive, constants, gasses, rate, from_depth, to_depth, setpoint, comps_in,
-    )
 }
 
 fn bottom(
@@ -482,7 +463,7 @@ fn calc_deco_int(
     while !main_done {
         let fs = next_stop(dive, &comps_out, constants, ngf);
         if fs < last_depth {
-            let (comps, seg) = ascend(
+            let (comps, seg) = change_depth(
                 dive,
                 constants,
                 gasses,
@@ -519,14 +500,12 @@ fn calc_deco_int(
             // XXX I want to be a function...
             let time_off = if segments.is_empty() {
                 0.0
+            } else if segments[segments.len() - 1].segment_type != SegmentType::LEVEL
+                && segments[segments.len() - 1].raw_time < 1.0
+            {
+                segments[segments.len() - 1].raw_time
             } else {
-                if segments[segments.len() - 1].segment_type != SegmentType::LEVEL
-                    && segments[segments.len() - 1].raw_time < 1.0
-                {
-                    segments[segments.len() - 1].raw_time
-                } else {
-                    0.0
-                }
+                0.0
             };
             if time_off > 0.0 {
                 segments.pop();
@@ -568,7 +547,7 @@ fn initial_segments(
         let depth = Pressure::from_depth(s.depth, dive.atm_pressure);
         let raw_time: f64;
         if last_depth < depth {
-            let (comps, seg) = descend(
+            let (comps, seg) = change_depth(
                 dive,
                 constants,
                 gasses,
@@ -582,7 +561,7 @@ fn initial_segments(
             segments.push(seg);
             comps_out = comps;
         } else {
-            let (comps, seg) = ascend(
+            let (comps, seg) = change_depth(
                 dive,
                 constants,
                 gasses,
@@ -628,7 +607,7 @@ fn ascend_to_first_stop(
     let mut fs = next_stop(dive, &comps_out, constants, dive.gf_lo);
     let mut at_first_stop = false;
     while !at_first_stop {
-        let (comps, seg) = ascend(
+        let (comps, seg) = change_depth(
             dive,
             constants,
             gasses,

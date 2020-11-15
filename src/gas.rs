@@ -68,7 +68,7 @@ impl Gas {
                 _ => return false,
             }
         }
-        return false;
+        false
     }
 
     //int get hashCode => (f_o2 * 1000 + f_he * 1000).ceil();
